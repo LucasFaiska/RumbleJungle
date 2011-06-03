@@ -39,6 +39,9 @@ class BasicGame:
 		self._players = [hostPlayer,]
 		self._turn = 0
 
+	def test(self):
+		return "Teste"
+
 	def join(self, player):
 		# TODO check max game players
 		# TODO check same player twice
