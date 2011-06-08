@@ -21,7 +21,7 @@ class GameClient:
         return self._socket.recv(1024).strip()
 
     def write(self, data):
-        return self._socket.send(data)
+        return self._socket.send("%s\n" % data.strip())
 
     def run(self):
         data = None

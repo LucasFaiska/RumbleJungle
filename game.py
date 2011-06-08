@@ -28,6 +28,8 @@ class BasicGame:
         None, None, None,
     ]
 
+    INVALID_EXCEPTION = InvalidAction
+
     def __init__(self, owner_cid):
         self._pieces = {}
         self._players = [owner_cid]
@@ -77,14 +79,28 @@ class BasicGame:
         if final_piece: self._pieces.pop(final) #remove, if exists
         self._pieces[final] = initial_piece
         self._turn += 1
-        return True
+        return 'moved_from %ix%i to %ix%i' % (initial+final)
 
     def win(self):
-        player = set([piece._player for piece in self._pieces.values()])
-        if len(player) == 1:
-            return player.pop()
-        return None
+        return 'no_winner_yet'
 
-    def execute(self, command):
-        return "PLayED"
+    def _move(self, cid, *args):
+        if len(args) != 4:
+            print repr(args)
+            raise InvalidAction
+        initial = (int(args[0]), int(args[1]))
+        final = (int(args[2]), int(args[3]))
+
+        return self.move(initial, final)
+
+
+    COMMANDS = {
+        'move': _move, #is a classmethod, need self as parameter
+    }
+
+    def execute(self, cid, command):
+        print '[execute]', repr(command)
+        if command[0] in self.COMMANDS:
+            return self.COMMANDS[command[0]](self, cid, *command[1:])
+        raise InvalidAction()
 

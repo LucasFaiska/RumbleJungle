@@ -28,7 +28,6 @@ class BaseServer:
         server.listen(5)
 
         while 1:
-            print '[HERE]'
             conn, addr = server.accept()
 
             client = GameClient(self, conn)
@@ -63,7 +62,7 @@ class GameServer(BaseServer):
 
     def _build_game_uid(self):
         # FIXME max clients
-        if len(self.all_games.keys()) > 100:
+        if len(self.all_games.keys()) >= 100:
             assert False
 
         # FIXME threads problem?!
@@ -71,6 +70,13 @@ class GameServer(BaseServer):
         while uid in self.all_games.keys():
             uid = random.randint(1, 101)
         return uid
+
+    def _notify_players(self, gid, message, exclude_cid=None):
+        game = self.all_games.get(gid)
+        for player_cid in game.players:
+            if player_cid != exclude_cid:
+                player = self.all_players[player_cid]
+                player.write(message)
 
     def list_games(self, cid):
         out = ''
@@ -93,19 +99,19 @@ class GameServer(BaseServer):
         game.players = [cid]
         self.all_games[gid] = game
         self.all_players[cid].gid = gid
-        return 'GAME:%s' % gid
+        return 'GAME %s' % gid
 
     def join_game(self, cid, args):
-        game = self.all_games.get(int(args[0]))
+        gid = int(args[0])
+        game = self.all_games.get(gid)
 
         if game is None:
             raise ProtocolError()
 
         game.join(cid)
 
-        for c in game.players:
-            self.all_players[c].write("NEW_PLAYER:%s" % cid)
-        self.all_players[cid].gid = int(args[0])
+        self._notify_players(gid, "NEW_PLAYER %s" % cid)
+        self.all_players[cid].gid = gid
         game.players.append(cid)
 
         return 'JOINED IN GAME %s' %args[0]
@@ -126,7 +132,11 @@ class GameServer(BaseServer):
         del(player.gid)
 
         for c in game.players:
-            self.all_players[c].write("PLAYER_LEFT:%s" % cid)
+            self.all_players[c].write("PLAYER_LEFT %s" % cid)
+
+        # remove game if all players left
+        if not game.players:
+            del self.all_games[gid]
 
         return 'LEFT %s' % gid
 
@@ -137,7 +147,12 @@ class GameServer(BaseServer):
             raise ProtocolError()
 
         game = self.all_games[player.gid]
-        return game.execute(command);
+        try:
+            result = game.execute(cid, command);
+        except game.INVALID_EXCEPTION, exception:
+            raise ProtocolError('Invalid game action!')
+        self._notify_players(player.gid, result, exclude_cid=cid)
+        return result
 
 
 if __name__ == '__main__':
