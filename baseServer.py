@@ -3,11 +3,8 @@ import socket
 
 import random
 from threading import Thread as Worker
-from game import Player, BasicGame
-from baseClient import GameClient
-
-class ProtocolError(Exception):
-	pass
+from game import BasicGame
+from baseClient import GameClient, ProtocolError
 
 class BaseServer:
     def __init__(self):
@@ -61,7 +58,7 @@ class BaseServer:
 
 
 class GameServer(BaseServer):
-    def start_game(self, *args):
+    def _start_game(self, *args):
         return BasicGame(*args)
 
     def _build_game_uid(self):
@@ -92,11 +89,55 @@ class GameServer(BaseServer):
 
     def create_game(self, cid):
         gid = self._build_game_uid()
-        self.all_games[gid] = self.start_game(self.all_players[cid]._player)
+        game = self._start_game(cid)
+        game.players = [cid]
+        self.all_games[gid] = game
+        self.all_players[cid].gid = gid
         return 'GAME:%s' % gid
 
-    def join_game(self, cid):
-        raise NotImplementedError
+    def join_game(self, cid, args):
+        game = self.all_games.get(int(args[0]))
+
+        if game is None:
+            raise ProtocolError()
+
+        game.join(cid)
+
+        for c in game.players:
+            self.all_players[c].write("NEW_PLAYER:%s" % cid)
+        self.all_players[cid].gid = int(args[0])
+        game.players.append(cid)
+
+        return 'JOINED IN GAME %s' %args[0]
+
+    def quit(self, cid):
+        player = self.all_players[cid]
+        if hasattr(player, 'gid'):
+            self.left_game(cid)
+
+    def left_game(self, cid):
+        player = self.all_players[cid]
+        gid = player.gid
+        game = self.all_games.get(player.gid)
+        # TODO threads
+        game.left(cid)
+        i = game.players.index(cid)
+        game.players.pop(i)
+        del(player.gid)
+
+        for c in game.players:
+            self.all_players[c].write("PLAYER_LEFT:%s" % cid)
+
+        return 'LEFT %s' % gid
+
+    def play(self, cid, command):
+        player = self.all_players[cid]
+
+        if not hasattr(player,'gid'):
+            raise ProtocolError()
+
+        game = self.all_games[player.gid]
+        return game.execute(command);
 
 
 if __name__ == '__main__':
