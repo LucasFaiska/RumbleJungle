@@ -2,7 +2,7 @@
 class Player:
 	def __init__(self, name):
 		self._name = name
-		
+
 class Piece:
 	def __init__(self, player):
 		self._player = player
