@@ -6,6 +6,14 @@ class Piece:
         self._captured = False
 
     def can_catch(self, piece):
+        if piece._captured:
+           return True
+        
+        if piece._value == ANIMAL_VALUE['Elephant'] and self._value == ANIMAL_VALUE['Mice']:
+           return True
+        elif piece.value == ANIMAL_VALUE['Mice'] and self._value == ANIMAL_VALUE['Elephant']:
+           return False
+
         if self._value > piece._value:
            return True
         else:
@@ -79,7 +87,7 @@ class BasicGame:
         player0, player1 = self._players
 
         # Automathize this, and change the numbers for MACROS
-        self._pieces[ (2,1) ] = Piece(player0, self.ANIMAL_VALUE['Lion'])
+        self._pieces[ (0,0) ] = Piece(player0, self.ANIMAL_VALUE['Lion'])
         self._pieces[ (0,6) ] = Piece(player0, self.ANIMAL_VALUE['Tiger'])
         self._pieces[ (1,1) ] = Piece(player0, self.ANIMAL_VALUE['Wolf'])
         self._pieces[ (1,5) ] = Piece(player0, self.ANIMAL_VALUE['Cat'])
@@ -91,7 +99,7 @@ class BasicGame:
         self._pieces[ (8,8) ] = Piece(player1, self.ANIMAL_VALUE['Lion'])
         self._pieces[ (8,0) ] = Piece(player1, self.ANIMAL_VALUE['Tiger'])
         self._pieces[ (7,5) ] = Piece(player1, self.ANIMAL_VALUE['Wolf'])
-        self._pieces[ (6,1) ] = Piece(player1, self.ANIMAL_VALUE['Cat'])
+        self._pieces[ (7,1) ] = Piece(player1, self.ANIMAL_VALUE['Cat'])
         self._pieces[ (6,6) ] = Piece(player1, self.ANIMAL_VALUE['Mice'])
         self._pieces[ (6,4) ] = Piece(player1, self.ANIMAL_VALUE['Panther'])
         self._pieces[ (6,2) ] = Piece(player1, self.ANIMAL_VALUE['Dog'])
@@ -118,16 +126,16 @@ class BasicGame:
                 raise InvalidAction()
             else:
                 self.on_lake(piece, initial, final)
-           
+        
+        if destination_board == self.TRAP:
+            self.caugth_by_a_trap(piece)        
+   
         if destination_piece is not None:
             if destination_piece._player == piece._player:
                 print 'You cannot move over your own piece'
                 raise InvalidAction()
-            #else:
-                #if piece.can_catch(destination_piece):
-                #   self._pieces.pop(
-                #else:
-                   
+            else:
+                print piece.can_catch(destination_piece)
 
     # Game Rules
     def caugth_by_a_trap(self, piece):
@@ -166,7 +174,7 @@ class BasicGame:
         self._check_move(initial, final) # is this move allowed?
 
         self._pieces.pop(initial) #remove
-        self._pieces[final] = initial_piece
+        #self._pieces[final] = initial_piece
         self._turn += 1
 
         return 'moved_from %ix%i to %ix%i' % (initial+final)
