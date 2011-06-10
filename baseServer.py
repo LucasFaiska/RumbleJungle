@@ -44,6 +44,13 @@ class BaseServer:
     def client_out(self, cid):
         self.all_players.pop(cid)
 
+    def _notify_players(self, gid, message, exclude_cid=None):
+        game = self.all_games.get(gid)
+        for player_cid in game.players:
+            if player_cid != exclude_cid:
+                player = self.all_players[player_cid]
+                player.write(message)
+
     def execute(self, cid, command):
         commands = command.split(' ')
 
@@ -75,12 +82,22 @@ class GameServer(BaseServer):
             uid = random.randint(1, 101)
         return uid
 
-    def _notify_players(self, gid, message, exclude_cid=None):
-        game = self.all_games.get(gid)
-        for player_cid in game.players:
-            if player_cid != exclude_cid:
-                player = self.all_players[player_cid]
-                player.write(message)
+    def check_end_game(self, cid):
+        player = self.all_players[cid]
+        if not hasattr(player, 'gid'):
+            return False
+
+        gid = player.gid
+        game = self.all_games[gid]
+        if game.ended():
+            # finished game
+            result = game.game_finished_status()
+            print result
+            for player in result:
+                msg = 'END_GAME - YOU %s' % result[player]
+                self.all_players[player].write(msg)
+            return True
+        return False
 
     def list_games(self, cid):
         out = ''
