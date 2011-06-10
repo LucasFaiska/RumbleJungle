@@ -14,9 +14,6 @@ class GameClient:
 
         self._player = Player('Player %i' % self.uid) # FIXME
 
-    def super_supimpa(self):
-        return '42'
-
     def read(self):
         return self._socket.recv(1024).strip()
 
@@ -33,6 +30,8 @@ class GameClient:
                 result = 'PROTOCOL_ERROR'
             if result:
                 self.write(result)
+
+            self._server.check_end_game(self.uid) # TODO what's next?
 
         self._socket.close()
         self._server.client_out(self.uid)

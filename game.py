@@ -124,6 +124,22 @@ class BasicGame:
             out.append('|'.join(a_row))
         return unicode('\n'.join(out))
 
+    def _get_players(self):
+        players = set([p._player for p in self._pieces.values()])
+        return players
+
+    def ended(self):
+        return len(self._get_players()) == 1 # 1 player, the WINNER
+
+    def game_finished_status(self):
+        if not self.ended():
+            return False
+
+        result = {}
+        winner = self._get_players().pop()
+        for player in self._players:
+            result[player] = 'won' if winner == player else 'lose'
+        return result
 
     # COMMANDS and STAUS are classmethods, need self as parameter
     COMMANDS = { # do actions, send confirmation to all players
