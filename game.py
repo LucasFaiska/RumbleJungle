@@ -6,7 +6,10 @@ class Piece:
         self._captured = False
 
     def can_catch(self, piece):
-        return True
+        if self._value > piece._value:
+           return True
+        else:
+           return False
 
 class InvalidAction(Exception):
     pass
@@ -57,9 +60,6 @@ class BasicGame:
         self._board = copy(self.INITIAL_BOARD)
         self._turn = 0
 
-    def test(self):
-        return "Teste"
-
     def even_or_odd(self):
         pass
 
@@ -79,7 +79,7 @@ class BasicGame:
         player0, player1 = self._players
 
         # Automathize this, and change the numbers for MACROS
-        self._pieces[ (0,0) ] = Piece(player0, self.ANIMAL_VALUE['Lion'])
+        self._pieces[ (2,1) ] = Piece(player0, self.ANIMAL_VALUE['Lion'])
         self._pieces[ (0,6) ] = Piece(player0, self.ANIMAL_VALUE['Tiger'])
         self._pieces[ (1,1) ] = Piece(player0, self.ANIMAL_VALUE['Wolf'])
         self._pieces[ (1,5) ] = Piece(player0, self.ANIMAL_VALUE['Cat'])
@@ -88,10 +88,10 @@ class BasicGame:
         self._pieces[ (2,4) ] = Piece(player0, self.ANIMAL_VALUE['Dog'])
         self._pieces[ (2,6) ] = Piece(player0, self.ANIMAL_VALUE['Elephant'])
 
-        self._pieces[ (8,6) ] = Piece(player1, self.ANIMAL_VALUE['Lion'])
+        self._pieces[ (8,8) ] = Piece(player1, self.ANIMAL_VALUE['Lion'])
         self._pieces[ (8,0) ] = Piece(player1, self.ANIMAL_VALUE['Tiger'])
         self._pieces[ (7,5) ] = Piece(player1, self.ANIMAL_VALUE['Wolf'])
-        self._pieces[ (7,1) ] = Piece(player1, self.ANIMAL_VALUE['Cat'])
+        self._pieces[ (6,1) ] = Piece(player1, self.ANIMAL_VALUE['Cat'])
         self._pieces[ (6,6) ] = Piece(player1, self.ANIMAL_VALUE['Mice'])
         self._pieces[ (6,4) ] = Piece(player1, self.ANIMAL_VALUE['Panther'])
         self._pieces[ (6,2) ] = Piece(player1, self.ANIMAL_VALUE['Dog'])
@@ -113,28 +113,44 @@ class BasicGame:
         destination_piece = self._pieces.get(final)
 
         if destination_board == self.LAKE:
-            if piece._value != self.ANIMAL_VALUE['Mice'] :
+            if piece._value not in (self.ANIMAL_VALUE['Mice'],self.ANIMAL_VALUE['Tiger'],self.ANIMAL_VALUE['Lion']):
                 print 'You cannot move to a lake!'
                 raise InvalidAction()
-
-        if destination_piece is not None and \
-            destination_piece._player == piece._player:
+            else:
+                self.on_lake(piece, initial, final)
+           
+        if destination_piece is not None:
+            if destination_piece._player == piece._player:
                 print 'You cannot move over your own piece'
                 raise InvalidAction()
+            #else:
+                #if piece.can_catch(destination_piece):
+                #   self._pieces.pop(
+                #else:
+                   
 
     # Game Rules
     def caugth_by_a_trap(self, piece):
         piece._captured = True
 
-    def catch_the_hole(self):
+    def catch_the_hole(self, piece):
         pass
 
-    def catch_a_enemy(self, piece1, piece2)
-        pass
-
-    def on_lake(self):
-        pass
-
+    def on_lake(self, piece, initial, final):
+        if(piece._value == self.ANIMAL_VALUE['Mice']):
+           #Mice can Enter in the Lake
+           pass
+        else:
+           #Tiger and Lion jump Over the Lake
+           if( initial[0] != final[0] ):
+              #Vertical move allow 3 spaces jump
+              if( abs(final[0] - initial[0]) != 4 ):
+                 raise InvalidAction()
+           if( initial[1] != final[1] ):
+              #Horizontal move allow 2 spaces jump
+              if( abs(final[1] - initial[1]) != 3 ):
+                 raise InvalidAction()
+             
     def on_earth(self):
         pass
 
@@ -143,7 +159,7 @@ class BasicGame:
         final_piece = self._pieces.get(final)
 
         if initial_piece is None:
-            print 'No piece on %s' % initial
+            print 'No piece on %s %s'  %initial[0] %initial[1]
             raise InvalidAction()
 
         self._check_turn(initial_piece) # is the right player?
