@@ -3,6 +3,8 @@ import socket
 
 import random
 from threading import Thread as Worker
+from threading import Lock
+
 from game import BasicGame
 from baseClient import GameClient, ProtocolError
 
@@ -10,6 +12,7 @@ class BaseServer:
     def __init__(self):
         self.all_players = {}
         self.all_games = {}
+        self._all_games_lock = Lock()
         self.initSocket()
 
     def initSocket(self):
@@ -58,14 +61,15 @@ class BaseServer:
 
 class GameServer(BaseServer):
     def _start_game(self, *args):
-        return BasicGame(*args)
+        game = BasicGame(*args)
+        game._lock = Lock()
+        return game
 
     def _build_game_uid(self):
         # FIXME max clients
         if len(self.all_games.keys()) >= 100:
             assert False
 
-        # FIXME threads problem?!
         uid = random.randint(1, 101)
         while uid in self.all_games.keys():
             uid = random.randint(1, 101)
@@ -94,11 +98,17 @@ class GameServer(BaseServer):
         return out
 
     def create_game(self, cid):
+        # lock to avoid problems between generate "uid" as set game dict
+        self._all_games_lock.acquire()
+
         gid = self._build_game_uid()
         game = self._start_game(cid)
         game.players = [cid]
         self.all_games[gid] = game
         self.all_players[cid].gid = gid
+
+        self._all_games_lock.release() # THREAD CONTROL
+
         return 'GAME %s' % gid
 
     def join_game(self, cid, args):
@@ -121,14 +131,25 @@ class GameServer(BaseServer):
         if hasattr(player, 'gid'):
             self.left_game(cid)
 
+    def my_game(self, cid):
+        player = self.all_players[cid]
+        if hasattr(player, 'gid'):
+            return 'IN_GAME %s' % player.gid
+        else:
+            return 'NOT_IN_A_GAME'
+
     def left_game(self, cid):
         player = self.all_players[cid]
         gid = player.gid
         game = self.all_games.get(player.gid)
-        # TODO threads
+        # lock to avoid 2 players change the "game.players" list at same time
+        # or between "index()" and "pop()" callers
+        game._lock.acquire()
         game.left(cid)
         i = game.players.index(cid)
         game.players.pop(i)
+        game._lock.release() # THREAD CONTROL
+
         del(player.gid)
 
         for c in game.players:
