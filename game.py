@@ -47,7 +47,6 @@ class BasicGame:
         # TODO check max game players
         # TODO check same player twice
         self._players.append(player_cid)
-        print len(self._players), self.TOTAL_PLAYERS, len(self._players) == self.TOTAL_PLAYERS
         if len(self._players) == self.TOTAL_PLAYERS:
             self.initPlayerPieces()
 
@@ -91,7 +90,7 @@ class BasicGame:
 
     def _move(self, cid, *args):
         if len(args) != 4:
-            print repr(args)
+            print '[InvalidAction]', repr(args)
             raise InvalidAction
         initial = (int(args[0]), int(args[1]))
         final = (int(args[2]), int(args[3]))
@@ -105,7 +104,6 @@ class BasicGame:
             for y in xrange(self.BOARD_DIMENTIONS[1]):
                 pos = x * self.BOARD_DIMENTIONS[1] + y
                 row = 6 * '_'
-                print self._pieces, (x,y), (x,y) in self._pieces
                 if (x,y) in self._pieces:
                     piece = self._pieces[(x,y)]
                     player_id = '%0.3i' % piece._player
@@ -125,7 +123,6 @@ class BasicGame:
     }
 
     def execute(self, cid, command):
-        print '[execute]', repr(command)
         if command[0] in self.COMMANDS:
             return self.COMMANDS[command[0]](self, cid, *command[1:]), True
         if command[0] in self.STATUS:
