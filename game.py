@@ -15,20 +15,36 @@ class BasicGame:
     
     TOTAL_PLAYERS = 2
 
+    HOLE = 0
+    EARTH = 1
+    TRAP = 2
+    LAKE = 3
+
     INITIAL_BOARD = [
-        ['Earth', 'Earth', 'Trap',  'Hole',  'Trap',  'Earth', 'Earth'],
-        ['Earth', 'Earth', 'Earth', 'Trap',  'Earth', 'Earth', 'Earth'],
-        ['Earth', 'Earth', 'Earth', 'Earth', 'Earth', 'Earth', 'Earth'],
-        ['Earth', 'Lake',  'Lake' , 'Earth', 'Lake',  'Lake',  'Earth'],
-        ['Earth', 'Lake',  'Lake' , 'Earth', 'Lake',  'Lake',  'Earth'],
-        ['Earth', 'Lake',  'Lake' , 'Earth', 'Lake',  'Lake',  'Earth'],
-        ['Earth', 'Earth', 'Earth', 'Earth', 'Earth', 'Earth', 'Earth'],
-        ['Earth', 'Earth', 'Earth', 'Trap',  'Earth', 'Earth', 'Earth'],
-        ['Earth', 'Earth', 'Trap',  'Hole',  'Trap',  'Earth', 'Earth']
+        [EARTH, EARTH, TRAP,  HOLE,  TRAP,  EARTH, EARTH],
+        [EARTH, EARTH, EARTH, TRAP,  EARTH, EARTH, EARTH],
+        [EARTH, EARTH, EARTH, EARTH, EARTH, EARTH, EARTH],
+        [EARTH, LAKE,  LAKE , EARTH, LAKE,  LAKE,  EARTH],
+        [EARTH, LAKE,  LAKE , EARTH, LAKE,  LAKE,  EARTH],
+        [EARTH, LAKE,  LAKE , EARTH, LAKE,  LAKE,  EARTH],
+        [EARTH, EARTH, EARTH, EARTH, EARTH, EARTH, EARTH],
+        [EARTH, EARTH, EARTH, TRAP,  EARTH, EARTH, EARTH],
+        [EARTH, EARTH, TRAP,  HOLE,  TRAP,  EARTH, EARTH],
     ]
 
-    ANIMAL_VALUE = {'Mice':1, 'Cat':2, 'Wolf':3, 'Dog':4, 'Panther':5, 'Tiger':6, 'Lion':7, 'Elephant':8}
-    VALUE_ANIMAL = {1:'Mice', 2:'Cat', 3:'Wolf', 4:'Dog', 5:'Panther', 6:'Tiger', 7:'Lion', 8:'Elephant'}
+    PIECE_TYPES = [
+        ('Mice', 1,),
+        ('Cat', 2,),
+        ('Wolf', 3,),
+        ('Dog', 4,),
+        ('Panther', 5,),
+        ('Tiger', 6,),
+        ('Lion', 7,),
+        ('Elephant', 8,),
+    ]
+
+    ANIMAL_VALUE = dict([(x[0], x[1]) for x in PIECE_TYPES])
+    VALUE_ANIMAL = dict([(x[1], x[0]) for x in PIECE_TYPES])
 
     INVALID_EXCEPTION = InvalidAction
 
@@ -44,7 +60,7 @@ class BasicGame:
         return "Teste"
 
     def even_or_odd(self):
-	pass
+        pass
 
     def join(self, player_cid):
         # TODO check max game players
@@ -61,24 +77,24 @@ class BasicGame:
     def initPlayerPieces(self):
         player0, player1 = self._players
 
-	# Automathize this, and change the numbers for MACROS
-        self._pieces[ (0,0) ] = Piece(player0,self.ANIMAL_VALUE['Lion'])
-        self._pieces[ (0,6) ] = Piece(player0,self.ANIMAL_VALUE['Tiger'])
-        self._pieces[ (1,1) ] = Piece(player0,self.ANIMAL_VALUE['Wolf'])
-        self._pieces[ (1,5) ] = Piece(player0,self.ANIMAL_VALUE['Cat'])
-        self._pieces[ (2,0) ] = Piece(player0,self.ANIMAL_VALUE['Mice'])
-        self._pieces[ (2,2) ] = Piece(player0,self.ANIMAL_VALUE['Panther'])
-        self._pieces[ (2,4) ] = Piece(player0,self.ANIMAL_VALUE['Dog'])
-        self._pieces[ (2,6) ] = Piece(player0,self.ANIMAL_VALUE['Elephant'])
+        # Automathize this, and change the numbers for MACROS
+        self._pieces[ (0,0) ] = Piece(player0, self.ANIMAL_VALUE['Lion'])
+        self._pieces[ (0,6) ] = Piece(player0, self.ANIMAL_VALUE['Tiger'])
+        self._pieces[ (1,1) ] = Piece(player0, self.ANIMAL_VALUE['Wolf'])
+        self._pieces[ (1,5) ] = Piece(player0, self.ANIMAL_VALUE['Cat'])
+        self._pieces[ (2,0) ] = Piece(player0, self.ANIMAL_VALUE['Mice'])
+        self._pieces[ (2,2) ] = Piece(player0, self.ANIMAL_VALUE['Panther'])
+        self._pieces[ (2,4) ] = Piece(player0, self.ANIMAL_VALUE['Dog'])
+        self._pieces[ (2,6) ] = Piece(player0, self.ANIMAL_VALUE['Elephant'])
 
-        self._pieces[ (8,6) ] = Piece(player1,self.ANIMAL_VALUE['Lion'])
-        self._pieces[ (8,0) ] = Piece(player1,self.ANIMAL_VALUE['Tiger'])
-        self._pieces[ (7,5) ] = Piece(player1,self.ANIMAL_VALUE['Wolf'])
-        self._pieces[ (7,1) ] = Piece(player1,self.ANIMAL_VALUE['Cat'])
-        self._pieces[ (6,6) ] = Piece(player1,self.ANIMAL_VALUE['Mice'])
-        self._pieces[ (6,4) ] = Piece(player1,self.ANIMAL_VALUE['Panther'])
-        self._pieces[ (6,2) ] = Piece(player1,self.ANIMAL_VALUE['Dog'])
-        self._pieces[ (6,0) ] = Piece(player1,self.ANIMAL_VALUE['Elephant'])
+        self._pieces[ (8,6) ] = Piece(player1, self.ANIMAL_VALUE['Lion'])
+        self._pieces[ (8,0) ] = Piece(player1, self.ANIMAL_VALUE['Tiger'])
+        self._pieces[ (7,5) ] = Piece(player1, self.ANIMAL_VALUE['Wolf'])
+        self._pieces[ (7,1) ] = Piece(player1, self.ANIMAL_VALUE['Cat'])
+        self._pieces[ (6,6) ] = Piece(player1, self.ANIMAL_VALUE['Mice'])
+        self._pieces[ (6,4) ] = Piece(player1, self.ANIMAL_VALUE['Panther'])
+        self._pieces[ (6,2) ] = Piece(player1, self.ANIMAL_VALUE['Dog'])
+        self._pieces[ (6,0) ] = Piece(player1, self.ANIMAL_VALUE['Elephant'])
 
     def playerTurn(self):
         playerNo = self._turn % len(self._players)
@@ -122,7 +138,7 @@ class BasicGame:
               raise InvalidAction()
            else:
               return catch_a_enemy(initial_piece,final_piece)
-        elif:
+        else:
            if self._board[final[0]][final[1]] == "Lake":
               return self.on_lake()
            elif self._board[final[0]][final[1]] == "Trap":
@@ -153,6 +169,9 @@ class BasicGame:
     def _board(self, cid, *args):
         out = ['%s %s' % self.BOARD_DIMENTIONS]
 
+        # 3 char player.uid (or _ if no piece)
+        # 3 char piece (or _ if no piece)
+        # 3 char of board
         for x in xrange(self.BOARD_DIMENTIONS[0]):
             a_row = []
             for y in xrange(self.BOARD_DIMENTIONS[1]):
@@ -161,12 +180,14 @@ class BasicGame:
                 if (x,y) in self._pieces:
                     piece = self._pieces[(x,y)]
                     player_id = '%0.3i' % piece._player
-                    piece_value = '%s' % self.VALUE_ANIMAL[piece._value]
+                    piece_value = '%0.3i' % piece._value
                     row = player_id + piece_value
-                else:
-                    row = self._board[x][y]
-                a_row.append(row.rjust(11))
-            out.append('|'.join(a_row))
+
+                row += '%0.3i' % self._board[x][y]
+                a_row.append(row)
+
+            out.append(' '.join(a_row))
+        print repr(out)
         return unicode('\n'.join(out))
 
     def _get_players(self):
