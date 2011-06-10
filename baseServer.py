@@ -193,7 +193,6 @@ class GameServer(BaseServer):
             self._notify_players(player.gid, result, exclude_cid=cid)
         return result
 
-
 if __name__ == '__main__':
     GameServer()
 
