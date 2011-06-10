@@ -174,7 +174,7 @@ class BasicGame:
         self._check_move(initial, final) # is this move allowed?
 
         self._pieces.pop(initial) #remove
-        #self._pieces[final] = initial_piece
+        self._pieces[final] = initial_piece
         self._turn += 1
 
         return 'moved_from %ix%i to %ix%i' % (initial+final)
