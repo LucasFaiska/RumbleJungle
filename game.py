@@ -100,13 +100,26 @@ class BasicGame:
         playerNo = self._turn % len(self._players)
         return self._players[playerNo]
 
-    def _checkTurn(self, piece):
+    def _check_turn(self, piece):
         if piece._player != self.playerTurn():
+            print 'Not your turn, %s!' % piece._player
             raise InvalidAction()
 
-    def _checkMove(self, initial, final):
-        if abs(initial[0]-final[0] + initial[1]-final[1]) > 1:
-            raise InvalidAction()
+    def _check_move(self, initial, final):
+        piece = self._pieces.get(initial)
+        x, y = final
+        destination_board = self._board[x][y]
+        destination_piece = self._pieces.get(final)
+
+        if destination_board == self.LAKE:
+            if piece._value != self.ANIMAL_VALUE['Mice']:
+                print 'You cannot move to a lake!'
+                raise InvalidAction()
+
+        if destination_piece is not None and \
+            destination_piece._player == piece._player:
+                print 'You cannot move over your own piece'
+                raise InvalidAction()
 
     # Game Rules
     def caugth_by_a_trap(self):
@@ -128,12 +141,23 @@ class BasicGame:
         initial_piece = self._pieces.get(initial)
         final_piece = self._pieces.get(final)
 
-        if initial_piece is None: raise InvalidAction()
-        self._checkTurn(initial_piece)
-        self._checkMove(initial, final)
+        if initial_piece is None:
+            print 'No piece on %s' % initial
+            raise InvalidAction()
 
+        self._check_turn(initial_piece) # is the right player?
+        self._check_move(initial, final) # is this move allowed?
+
+        self._pieces.pop(initial) #remove
+        self._pieces[final] = initial_piece
+        self._turn += 1
+
+        return 'moved_from %ix%i to %ix%i' % (initial+final)
+
+        '''
+        # TODO
         #check if the final_piece is an enemy or a friend
-        if isinstance(final_piece,Piece):
+        if isinstance(final_piece, Piece):
            if initial_piece.player == final_piece.player:
               raise InvalidAction()
            else:
@@ -147,15 +171,11 @@ class BasicGame:
               return self.on_earth()
            elif self._board[final[0]][final[1]] == "Hole":
               return self.catch_the_hoke()
+        '''
 
-        #self._pieces.pop(initial) #remove
-        #if final_piece: self._pieces.pop(final) #remove, if exists
-        #self._pieces[final] = initial_piece
-        self._turn += 1
-
-        return 'moved_from %ix%i to %ix%i' % (initial+final)
 
     def win(self):
+        # TODO
         return 'no_winner_yet'
 
     def _move(self, cid, *args):
@@ -187,7 +207,6 @@ class BasicGame:
                 a_row.append(row)
 
             out.append(' '.join(a_row))
-        print repr(out)
         return unicode('\n'.join(out))
 
     def _get_players(self):
