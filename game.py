@@ -1,6 +1,6 @@
 
 class Piece:
-    def __init__(self, player):
+    def __init__(self, player, value
         self._player = player
         self._id = 'B'
 
@@ -12,27 +12,24 @@ class InvalidAction(Exception):
 
 from copy import copy
 class BasicGame:
-    '''
-    A very basic functional game, used to test features
-    -------------
-    | 0 |   |   |
-    -------------
-    |   |   |   |
-    -------------
-    |   |   | 1 |
-    -------------
-    '''
+    
     TOTAL_PLAYERS = 2
 
     INITIAL_BOARD = [
-        None, None, None,
-        None, None, None,
-        None, None, None,
+        'Earth', 'Earth', 'Trap',  'Hole',  'Trap',  'Earth', 'Earth',
+        'Earth', 'Earth', 'Earth', 'Trap',  'Earth', 'Earth', 'Earth',
+        'Earth', 'Earth', 'Earth', 'Earth', 'Earth', 'Earth', 'Earth',
+        'Earth', 'Lake',  'Lake' , 'Earth', 'Lake',  'Lake',  'Earth',
+        'Earth', 'Lake',  'Lake' , 'Earth', 'Lake',  'Lake',  'Earth',
+        'Earth', 'Lake',  'Lake' , 'Earth', 'Lake',  'Lake',  'Earth',
+        'Earth', 'Earth', 'Earth', 'Earth', 'Earth', 'Earth', 'Earth',
+        'Earth', 'Earth', 'Earth', 'Trap',  'Earth', 'Earth', 'Earth',
+        'Earth', 'Earth', 'Trap',  'Hole',  'Trap',  'Earth', 'Earth',
     ]
 
     INVALID_EXCEPTION = InvalidAction
 
-    BOARD_DIMENTIONS = (3, 3)
+    BOARD_DIMENTIONS = (7, 9)
 
     def __init__(self, owner_cid):
         self._pieces = {}
@@ -42,6 +39,8 @@ class BasicGame:
 
     def test(self):
         return "Teste"
+
+
 
     def join(self, player_cid):
         # TODO check max game players
@@ -56,7 +55,19 @@ class BasicGame:
 
     def initPlayerPieces(self):
         player0, player1 = self._players
-        self._pieces[ (0,0) ] = Piece(player0)
+
+	# Add player1 pieces
+        self._pieces[ (0,0) ] = Piece(player0,7)
+        self._pieces[ (0,0) ] = Piece(player0,6)
+        self._pieces[ (0,0) ] = Piece(player0,3)
+        self._pieces[ (0,0) ] = Piece(player0,2)
+        self._pieces[ (0,0) ] = Piece(player0,1)
+        self._pieces[ (0,0) ] = Piece(player0,5)
+        self._pieces[ (0,0) ] = Piece(player0,4)
+        self._pieces[ (0,0) ] = Piece(player0,8)
+
+
+
         self._pieces[ (2,2) ] = Piece(player1)
 
     def playerTurn(self):
