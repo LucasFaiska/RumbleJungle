@@ -1,6 +1,8 @@
+
 class Piece:
     def __init__(self, player):
         self._player = player
+        self._id = 'B'
 
     def can_catch(self, piece):
         return True
@@ -30,6 +32,8 @@ class BasicGame:
 
     INVALID_EXCEPTION = InvalidAction
 
+    BOARD_DIMENTIONS = (3, 3)
+
     def __init__(self, owner_cid):
         self._pieces = {}
         self._players = [owner_cid]
@@ -43,6 +47,7 @@ class BasicGame:
         # TODO check max game players
         # TODO check same player twice
         self._players.append(player_cid)
+        print len(self._players), self.TOTAL_PLAYERS, len(self._players) == self.TOTAL_PLAYERS
         if len(self._players) == self.TOTAL_PLAYERS:
             self.initPlayerPieces()
 
@@ -93,14 +98,38 @@ class BasicGame:
 
         return self.move(initial, final)
 
+    def _board(self, cid):
+        out = ['%s %s' % self.BOARD_DIMENTIONS]
+        for x in xrange(self.BOARD_DIMENTIONS[0]):
+            a_row = []
+            for y in xrange(self.BOARD_DIMENTIONS[1]):
+                pos = x * self.BOARD_DIMENTIONS[1] + y
+                row = 6 * '_'
+                print self._pieces, (x,y), (x,y) in self._pieces
+                if (x,y) in self._pieces:
+                    piece = self._pieces[(x,y)]
+                    player_id = '%0.3i' % piece._player
+                    piece_id = '%3s' % piece._id
+                    row = player_id + piece_id
+                a_row.append(row)
+            out.append('|'.join(a_row))
+        return unicode('\n'.join(out))
 
-    COMMANDS = {
-        'move': _move, #is a classmethod, need self as parameter
+
+    # COMMANDS and STAUS are classmethods, need self as parameter
+    COMMANDS = { # do actions, send confirmation to all players
+        'move': _move,
+    }
+    STATUS = { # get information/status about game, sent to requested player
+        'board': _board,
     }
 
     def execute(self, cid, command):
         print '[execute]', repr(command)
         if command[0] in self.COMMANDS:
-            return self.COMMANDS[command[0]](self, cid, *command[1:])
+            return self.COMMANDS[command[0]](self, cid, *command[1:]), True
+        if command[0] in self.STATUS:
+            return self.STATUS[command[0]](self, cid, *command[1:]), False
+
         raise InvalidAction()
 

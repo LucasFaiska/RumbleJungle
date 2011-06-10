@@ -169,10 +169,11 @@ class GameServer(BaseServer):
 
         game = self.all_games[player.gid]
         try:
-            result = game.execute(cid, command);
+            result, send_to_all = game.execute(cid, command)
         except game.INVALID_EXCEPTION, exception:
             raise ProtocolError('Invalid game action!')
-        self._notify_players(player.gid, result, exclude_cid=cid)
+        if send_to_all:
+            self._notify_players(player.gid, result, exclude_cid=cid)
         return result
 
 
