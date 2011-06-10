@@ -3,6 +3,7 @@ class Piece:
     def __init__(self, player, value):
         self._player = player
         self._value = value
+        self._captured = False
 
     def can_catch(self, piece):
         return True
@@ -109,13 +110,13 @@ class BasicGame:
             raise InvalidAction()
 
     # Game Rules
-    def caugth_by_a_trap(self):
-        pass
+    def caugth_by_a_trap(self, piece):
+        piece._captured = True
 
     def catch_the_hole(self):
         pass
 
-    def catch_a_enemy(self):
+    def catch_a_enemy(self, piece1, piece2)
         pass
 
     def on_lake(self):
@@ -140,17 +141,17 @@ class BasicGame:
               return catch_a_enemy(initial_piece,final_piece)
         else:
            if self._board[final[0]][final[1]] == "Lake":
-              return self.on_lake()
+              self.on_lake()
            elif self._board[final[0]][final[1]] == "Trap":
-              return self.caugth_by_a_trap()
+              self.caugth_by_a_trap(initial_piece)
            elif self._board[final[0]][final[1]] == "Earth":
-              return self.on_earth()
+              self.on_earth()
            elif self._board[final[0]][final[1]] == "Hole":
-              return self.catch_the_hoke()
+              self.catch_the_hole()
 
-        #self._pieces.pop(initial) #remove
-        #if final_piece: self._pieces.pop(final) #remove, if exists
-        #self._pieces[final] = initial_piece
+        self._pieces.pop(initial) #remove
+        if final_piece: self._pieces.pop(final) #remove, if exists
+        self._pieces[final] = initial_piece
         self._turn += 1
 
         return 'moved_from %ix%i to %ix%i' % (initial+final)
