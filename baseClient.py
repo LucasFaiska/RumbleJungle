@@ -20,7 +20,11 @@ class GameClient:
     def write(self, data):
         return self._socket.send("%s\n" % data.strip())
 
+    def hello(self):
+        self.write('HELLO %s' % self.uid)
+
     def run(self):
+        self.hello()
         data = None
         while data != 'quit':
             data = self.read() # even "quit" has a implementation
