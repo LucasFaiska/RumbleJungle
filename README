@@ -24,3 +24,19 @@ Move piece in coordinates (xI, yI) to (xF, yF)
 # board
 Show the actual board
 
+
+## Roules:
+[ ] As peças movem-se uma casa por vez, horizontal ou verticalmente, mas nunca na diagonal.
+[ ] Nenhuma peça de um jogador pode entrar na casa da sua própria toca.
+[ ] As peças também não podem entrar nas casas com água (lagos), exceto os ratos.
+[ ] Cada casa só pode ser ocupada por uma peça de cada vez.
+[ ] Uma peça não pode se mover para uma casa ocupada por outra amiga
+[x] Uma peça não pode se mover para uma casa ocupada por uma inimiga de valor maior que ela.
+[x] Porém ela pode ir para onde esteja uma inimiga de valor igual ou menor
+[ ] Nesse caso ocorre uma captura e a peça atacada é removida definitivamente do tabuleiro.
+[x] A única exceção é o rato (valor mínimo), que não pode ser capturado pelo elefante (valor máximo). Ele é quem pode capturar o elefante.
+[ ] Aos leões e tigres é permitido saltar sobre as casas de água: num único movimento, podem sair de uma casa vizinha ao lago e pular, em linha reta, para a casa oposta na outra margem. Mas isso apenas se não houver nenhum rato no caminho.
+[ ] Já os ratos não podem capturar na mesma jogada em que estiverem passando da terra para a água, ou desta para a terra, o que significa dizer que essas passagens só podem ser feitas se a casa de destino estiver vaga. Desse modo, dentro dos lagos, os ratos estão a salvo de tudo, exceto de outro rato que já esteja lá dentro.
+[x] Qualquer peça que entre numa armadilha inimiga perde completamente sua força, passando a ter valor zero.
+[x] Quando sair, recuperará sua força normal, mas, enquanto ali estiver, poderá ser capturada por uma peça de qualquer valor.
+
