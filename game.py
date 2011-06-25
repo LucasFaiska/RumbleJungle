@@ -1,5 +1,5 @@
 
-class InvalidAction(Exception):
+class InvalidMovement(Exception):
     pass
 
 
@@ -70,6 +70,7 @@ class Board:
             self._init_board()
 
     def _init_board(self):
+        self.turn = 0
         player0, player1 = self._players
 
         self._pieces = {
@@ -91,6 +92,37 @@ class Board:
             (6,2): Piece(player1, Piece.DOG),
             (6,0): Piece(player1, Piece.ELEPHANT),
         }
+
+    def move(self, initial, final):
+
+        if initial not in self._pieces:
+            raise InvalidMovement('Piece not found')
+
+        piece = self._pieces[initial]
+
+        player = self._players[self.turn % self.NBR_PLAYERS]
+        if player != piece._player:
+            raise InvalidMovement('Invalid player')
+
+        if initial[0] != final[0] and initial[1] != final[1]:
+            raise InvalidMovement('Diagonal movements are not allowed')
+
+        if final in self._pieces:
+            piece_final = self._pieces[final]
+            if piece._player == piece_final._player:
+                raise InvalidMovement('Can\'t catch a same team piece')
+
+            if not piece.can_catch(piece_final):
+                raise InvalidMovement('Can\'t catch this piece')
+
+        piece = self._pieces.pop(initial)
+        self._pieces[final] = piece
+
+        return True
+
+
+class InvalidAction(Exception):
+    pass
 
 from copy import copy
 class BasicGame:

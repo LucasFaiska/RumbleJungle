@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from game import Piece, Board
+from game import Piece, Board, InvalidMovement
 from unittest import TestCase
 
 class MockPlayer:
@@ -88,6 +88,103 @@ class BoardTest(TestCase):
         board1.join(player2)
 
         self.assertEqual(board1._pieces[ (0,0) ], Piece(player1, 7))
+
+class BoardMoveTest(TestCase):
+    '''
+    Movement roules on the board
+    '''
+    def setUp(self):
+        player1 = MockPlayer()
+        player2 = MockPlayer()
+
+        board1 = Board(player1)
+        board1.join(player2)
+
+        board1._pieces = {
+            (0,0): Piece(player1, 7),
+            (8,8): Piece(player2, 7)
+        }
+
+        self.board = board1
+        self.player1 = player1
+        self.player2 = player2
+
+    def test_piece_move_horizontally(self):
+        '''
+        Move horizontal
+        '''
+        board1 = self.board
+        board1.move( (0,0), (0,1) )
+        self.assertTrue((0,1) in board1._pieces)
+
+    def test_piece_move_vertically(self):
+        '''
+        Move vertically
+        '''
+        board1 = self.board
+        board1.move( (0,0), (1,0) )
+        self.assertTrue((1,0) in board1._pieces)
+
+    def test_piece_move_diagonally(self):
+        '''
+        Move horizontal or vertically, but not diagonal
+        '''
+        board1 = self.board
+        self.assertRaises(InvalidMovement, board1.move, (0,0), (1,1))
+        self.assertTrue((0,0) in board1._pieces)
+
+    def test_piece_wrong_player(self):
+        '''
+        First player begin the game
+        '''
+        board1 = self.board
+        self.assertRaises(InvalidMovement, board1.move, (8,8), (8,7))
+
+    def test_wrong_piece(self):
+        '''
+        Check the correct coordinator
+        '''
+        board1 = self.board
+        self.assertRaises(InvalidMovement, board1.move, (5,5), (6,5))
+
+    def test_capture(self):
+        '''
+        Test a piece capture
+        '''
+        board1 = self.board
+        player1 = self.player1
+        player2 = self.player2
+
+        board1._pieces.update({
+            (1,0): Piece(player2, 7),
+        })
+        board1.move( (0,0), (1,0) )
+        self.assertEqual(board1._pieces[(1,0)], Piece(player1, 7))
+
+    def test_not_capture(self):
+        '''
+        Test a piece capture, but with a larger value
+        '''
+        board1 = self.board
+        player1 = self.player1
+        player2 = self.player2
+
+        board1._pieces.update({
+            (1,0): Piece(player2, 8),
+        })
+        self.assertRaises(InvalidMovement, board1.move, (0,0), (1,0))
+
+    def test_same_player_piece(self):
+        '''
+        Cannot capture a same team's piece
+        '''
+        board1 = self.board
+        player1 = self.player1
+        board1._pieces.update({
+            (1,0): Piece(player1, 7),
+        })
+        self.assertRaises(InvalidMovement, board1.move, (0,0), (1,0))
+
 
 class GameTest(TestCase):
     '''
