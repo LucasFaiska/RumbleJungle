@@ -26,6 +26,12 @@ class Piece:
 
         return self._value >= piece._value
 
+    def can_swim(self):
+        '''
+        If this piece can get into a lake
+        '''
+        return self._value == self.MOUSE
+
     def trap(self):
         self._original_value = self._value
         self._value = 0
@@ -114,6 +120,10 @@ class Board:
 
             if not piece.can_catch(piece_final):
                 raise InvalidMovement('Can\'t catch this piece')
+
+        line, column = final
+        if not piece.can_swim() and self._board[line][column] == self.LAKE:
+            raise InvalidMovement('Can\'t jump into a lake')
 
         piece = self._pieces.pop(initial)
         self._pieces[final] = piece
