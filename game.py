@@ -113,17 +113,30 @@ class Board:
         if initial[0] != final[0] and initial[1] != final[1]:
             raise InvalidMovement('Diagonal movements are not allowed')
 
+        line, column = final
+        if not piece.can_swim() and self._board[line][column] == self.LAKE:
+            raise InvalidMovement('Can\'t jump into a lake')
+
         if final in self._pieces:
             piece_final = self._pieces[final]
+
             if piece._player == piece_final._player:
                 raise InvalidMovement('Can\'t catch a same team piece')
 
             if not piece.can_catch(piece_final):
                 raise InvalidMovement('Can\'t catch this piece')
 
-        line, column = final
-        if not piece.can_swim() and self._board[line][column] == self.LAKE:
-            raise InvalidMovement('Can\'t jump into a lake')
+            fline, fcolumn = final
+            iline, icolumn = initial
+            if self._board[fline][fcolumn] == self.LAKE and \
+                    self._board[iline][icolumn] == self.EARTH:
+                raise InvalidMovement('Can\'t catch and get into a lake at '
+                    'same time')
+
+            if self._board[fline][fcolumn] == self.EARTH and \
+                    self._board[iline][icolumn] == self.LAKE:
+                raise InvalidMovement('Can\'t catch and get out a lake at '
+                    'same time')
 
         piece = self._pieces.pop(initial)
         self._pieces[final] = piece

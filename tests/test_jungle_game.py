@@ -187,7 +187,7 @@ class BoardMoveTest(TestCase):
 
     def test_mouse_into_lake(self):
         '''
-        Mouses (and just Mouses) can get into a lake.
+        Mouses (and just Mouses) can get into a lake
         '''
         board1 = self.board
         player1 = self.player1
@@ -202,6 +202,32 @@ class BoardMoveTest(TestCase):
         board1.move( (2,1), (3,1) )
         self.assertEqual(board1._pieces[(3,1)], Piece(player1, 1))
 
+    def test_mouse_into_lake_capture(self):
+        '''
+        Mouses can't get into (or out) a lake and capture in same movement
+        '''
+        board1 = self.board
+        player1 = self.player1
+        player2 = self.player2
+
+        board1._pieces.update({
+            (3,1): Piece(player1, 1),
+            (2,1): Piece(player2, 1),
+        })
+        self.assertRaises(InvalidMovement, board1.move, (3,1), (2,1))
+
+        board1._pieces.update({
+            (2,1): Piece(player1, 1),
+            (3,1): Piece(player2, 1),
+        })
+        self.assertRaises(InvalidMovement, board1.move, (2,1), (3,1))
+
+        board1._pieces.update({
+            (3,2): Piece(player1, 1),
+            (3,1): Piece(player2, 1),
+        })
+        board1.move((3,2), (3,1))
+        self.assertEqual(board1._pieces[(3,1)], Piece(player1, 1))
 
 class GameTest(TestCase):
     '''
