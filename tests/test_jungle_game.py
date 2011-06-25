@@ -21,13 +21,13 @@ class PieceTest(TestCase):
         player1 = MockPlayer()
         player2 = MockPlayer()
 
-        piece1 = Piece(player1, 1)
+        piece1 = Piece(player1, Piece.MOUSE)
         piece2 = Piece(player2, 2)
 
         self.failIf(piece1.can_catch(piece2))
         self.assertTrue(piece2.can_catch(piece1))
 
-        piece2 = Piece(player2, 1)
+        piece2 = Piece(player2, Piece.MOUSE)
         self.assertTrue(piece2.can_catch(piece1))
         self.assertTrue(piece1.can_catch(piece2))
 
@@ -41,7 +41,7 @@ class PieceTest(TestCase):
         player1 = MockPlayer()
         player2 = MockPlayer()
 
-        piece1 = Piece(player1, 1)
+        piece1 = Piece(player1, Piece.MOUSE)
         piece8 = Piece(player2, 8)
 
         self.failIf(piece8.can_catch(piece1))
@@ -55,7 +55,7 @@ class PieceTest(TestCase):
         player1 = MockPlayer()
         player2 = MockPlayer()
 
-        piece1 = Piece(player1, 1)
+        piece1 = Piece(player1, Piece.MOUSE)
         piece2 = Piece(player2, 2)
 
         piece2.trap()
@@ -133,6 +133,16 @@ class BoardMoveTest(TestCase):
         self.assertRaises(InvalidMovement, board1.move, (0,0), (1,1))
         self.assertTrue((0,0) in board1._pieces)
 
+    def test_piece_move_2(self):
+        '''
+        Movement are allowed just for 1 square by time
+        '''
+        board1 = self.board
+        self.assertRaises(InvalidMovement, board1.move, (0,0), (2,0))
+        self.assertTrue((0,0) in board1._pieces)
+        self.assertRaises(InvalidMovement, board1.move, (0,0), (0,2))
+        self.assertTrue((0,0) in board1._pieces)
+
     def test_piece_wrong_player(self):
         '''
         First player begin the game
@@ -197,10 +207,10 @@ class BoardMoveTest(TestCase):
         self.assertRaises(InvalidMovement, board1.move, (2,1), (3,1))
 
         board1._pieces.update({
-            (2,1): Piece(player1, 1),
+            (2,1): Piece(player1, Piece.MOUSE),
         })
         board1.move( (2,1), (3,1) )
-        self.assertEqual(board1._pieces[(3,1)], Piece(player1, 1))
+        self.assertEqual(board1._pieces[(3,1)], Piece(player1, Piece.MOUSE))
 
     def test_mouse_into_lake_capture(self):
         '''
@@ -211,23 +221,77 @@ class BoardMoveTest(TestCase):
         player2 = self.player2
 
         board1._pieces.update({
-            (3,1): Piece(player1, 1),
-            (2,1): Piece(player2, 1),
+            (3,1): Piece(player1, Piece.MOUSE),
+            (2,1): Piece(player2, Piece.MOUSE),
         })
         self.assertRaises(InvalidMovement, board1.move, (3,1), (2,1))
 
         board1._pieces.update({
-            (2,1): Piece(player1, 1),
-            (3,1): Piece(player2, 1),
+            (2,1): Piece(player1, Piece.MOUSE),
+            (3,1): Piece(player2, Piece.MOUSE),
         })
         self.assertRaises(InvalidMovement, board1.move, (2,1), (3,1))
 
         board1._pieces.update({
-            (3,2): Piece(player1, 1),
-            (3,1): Piece(player2, 1),
+            (3,2): Piece(player1, Piece.MOUSE),
+            (3,1): Piece(player2, Piece.MOUSE),
         })
         board1.move((3,2), (3,1))
-        self.assertEqual(board1._pieces[(3,1)], Piece(player1, 1))
+        self.assertEqual(board1._pieces[(3,1)], Piece(player1, Piece.MOUSE))
+
+    def test_jump_lake(self):
+        '''
+        Tigers and lions can jump the lakes
+        '''
+        board1 = self.board
+        player1 = self.player1
+
+        board1._pieces.update({
+            (3,0): Piece(player1, Piece.LION),
+        })
+        board1.move( (3,0), (3,3) )
+        self.assertEqual(board1._pieces[(3,3)], Piece(player1, Piece.LION))
+
+        board1._pieces.update({
+            (2,1): Piece(player1, Piece.LION),
+        })
+        board1.move( (2,1), (6,1) )
+        self.assertEqual(board1._pieces[(6,1)], Piece(player1, Piece.LION))
+
+
+    def test_cant_jump_not_lake(self):
+        '''
+        If aren't a lake, can't jump
+        Or even have EARTH between lakes
+        '''
+        board1 = self.board
+        player1 = self.player1
+
+        board1._pieces.update({
+            (2,0): Piece(player1, Piece.LION),
+        })
+        self.assertRaises(InvalidMovement, board1.move, (2,0), (6,0))
+        self.assertEqual(board1._pieces[(2,0)], Piece(player1, Piece.LION))
+
+        board1._pieces.update({
+            (3,0): Piece(player1, Piece.LION),
+        })
+        self.assertRaises(InvalidMovement, board1.move, (3,0), (3,6))
+        self.assertEqual(board1._pieces[(3,0)], Piece(player1, Piece.LION))
+
+
+    def test_cant_jump(self):
+        '''
+        Elephants can't jump
+        '''
+        board1 = self.board
+        player1 = self.player1
+
+        board1._pieces.update({
+            (3,0): Piece(player1, Piece.ELEPHANT),
+        })
+        self.assertRaises(InvalidMovement, board1.move, (3,0), (3,3))
+        self.assertEqual(board1._pieces[(3,0)], Piece(player1, Piece.ELEPHANT))
 
 class GameTest(TestCase):
     '''

@@ -32,6 +32,12 @@ class Piece:
         '''
         return self._value == self.MOUSE
 
+    def can_jump(self):
+        '''
+        If this piece can jump a lake
+        '''
+        return self._value in (self.TIGER, self.LION)
+
     def trap(self):
         self._original_value = self._value
         self._value = 0
@@ -101,18 +107,22 @@ class Board:
 
     def move(self, initial, final):
 
+        # get initial piece
         if initial not in self._pieces:
             raise InvalidMovement('Piece not found')
 
         piece = self._pieces[initial]
 
+        # check player's turn
         player = self._players[self.turn % self.NBR_PLAYERS]
         if player != piece._player:
             raise InvalidMovement('Invalid player')
 
+        # diagonally movements are forbidden
         if initial[0] != final[0] and initial[1] != final[1]:
             raise InvalidMovement('Diagonal movements are not allowed')
 
+        # just special pieces can get into a lake
         line, column = final
         if not piece.can_swim() and self._board[line][column] == self.LAKE:
             raise InvalidMovement('Can\'t jump into a lake')
@@ -120,12 +130,15 @@ class Board:
         if final in self._pieces:
             piece_final = self._pieces[final]
 
+            # same team piece
             if piece._player == piece_final._player:
                 raise InvalidMovement('Can\'t catch a same team piece')
 
+            # check "can_catch" method
             if not piece.can_catch(piece_final):
                 raise InvalidMovement('Can\'t catch this piece')
 
+            # mouses can't catch and get into/out a lake at same time
             fline, fcolumn = final
             iline, icolumn = initial
             if self._board[fline][fcolumn] == self.LAKE and \
@@ -138,6 +151,28 @@ class Board:
                 raise InvalidMovement('Can\'t catch and get out a lake at '
                     'same time')
 
+
+        if abs(initial[0] - final[0]) > 1 or abs(initial[1] - final[1]) > 1:
+            if piece.can_jump():
+                # max size of a movement
+                if initial[0] == final[0]:
+                    # movement from "1" key (column)
+                    for i in xrange(initial[1]+1, final[1]):
+                        if self._board[initial[0]][i] != self.LAKE:
+                            # jump is just in a lake
+                            raise InvalidMovement('Too big movement')
+                else:
+                    # movement from "0" key (line)
+                    for i in xrange(initial[0]+1, final[0]):
+                        if self._board[i][initial[1]] != self.LAKE:
+                            # jump is just in a lake
+                            raise InvalidMovement('Too big movement')
+            else:
+                # more then 2 squares and can't jump
+                raise InvalidMovement('Too big movement')
+
+
+        # execute the movement!
         piece = self._pieces.pop(initial)
         self._pieces[final] = piece
 
