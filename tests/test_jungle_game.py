@@ -258,6 +258,10 @@ class BoardMoveTest(TestCase):
         board1._pieces.update({
             (2,1): Piece(player1, Piece.LION),
         })
+
+        # player1 can play againt
+        board1.turn = 0
+
         board1.move( (2,1), (6,1) )
         self.assertEqual(board1._pieces[(6,1)], Piece(player1, Piece.LION))
 
@@ -353,6 +357,55 @@ class BoardMoveTest(TestCase):
 
         self.assertEqual(board1._winner, player1)
         self.assertRaises(InvalidMovement, board1.move, (8,3), (8,4))
+
+    def test_into_trap(self):
+        '''
+        When a piece get into a trap, lose all your force (value=0)
+        When get out a trap, get your force back
+        '''
+        board1 = self.board
+        player1 = self.player1
+
+        board1._pieces.update({
+            (0,1): Piece(player1, Piece.TIGER),
+        })
+        board1.move((0,1), (0,2))
+
+        piece = board1._pieces[(0,2)]
+        self.assertEqual(piece._value, 0)
+
+        # reset turn, player1 can play again
+        board1.turn = 0
+
+        board1.move((0,2), (0,1))
+        piece = board1._pieces[(0,1)]
+        self.assertEqual(piece._value, Piece.TIGER)
+
+    def test_into_trap_catch(self):
+        '''
+        When a piece get into a trap, anyone can catch it
+        '''
+        board1 = self.board
+        player1 = self.player1
+        player2 = self.player2
+
+        board1._pieces.update({
+            (0,1): Piece(player1, Piece.TIGER),
+
+            # normaly, a mouse can't catch a tiger
+            (0,3): Piece(player2, Piece.MOUSE),
+        })
+
+        board1.move((0,1), (0,2)) # Tiger into a trap
+        board1.move((0,3), (0,2)) # Mouse catch a Tiger
+
+        piece = board1._pieces[(0,2)]
+
+        # piece are from player2
+        self.assertEqual(piece._player, player2)
+
+        # and now mouse are in a trap
+        self.assertEqual(piece._value, 0)
 
 
 class GameTest(TestCase):

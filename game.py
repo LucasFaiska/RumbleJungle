@@ -27,7 +27,7 @@ class Piece:
 
     def __init__(self, player, value):
         self._player = player
-        self._value = value
+        self._original_value = self._value = value
 
     def can_catch(self, piece):
         if self._value == self.MOUSE and piece._value == self.ELEPHANT:
@@ -51,7 +51,6 @@ class Piece:
         return self._value in (self.TIGER, self.LION)
 
     def trap(self):
-        self._original_value = self._value
         self._value = 0
 
     def release(self):
@@ -60,6 +59,10 @@ class Piece:
     def __eq__(self, piece):
         return self._player == piece._player and \
             self._value == piece._value
+
+    def __repr__(self):
+        return u'<Piece value=%i (%i), player=%s>' % (self._value,
+            self._original_value, self._player)
 
 from copy import copy
 class Board:
@@ -197,15 +200,29 @@ class Board:
                 # more then 2 squares and can't jump
                 raise InvalidMovement('Too big movement')
 
+        # get the piece
+        piece = self._pieces.pop(initial)
+
+        # get into a trap
+        fline, fcolumn = final
+        if self._board[fline][fcolumn] == self.TRAP:
+            piece.trap()
+        else:
+            # get out a trap
+            iline, icolumn = initial
+            if self._board[iline][icolumn] == self.TRAP:
+                piece.release()
 
         # execute the movement!
-        piece = self._pieces.pop(initial)
         self._pieces[final] = piece
 
         # is a winner?
         if isinstance(piece_final, Hole):
             # yes! you win!
             self.win(piece._player)
+
+        # next turn!
+        self.turn += 1
 
         return True
 
