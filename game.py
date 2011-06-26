@@ -2,8 +2,20 @@
 class InvalidMovement(Exception):
     pass
 
+class Hole:
+    '''
+    A flag, like in "flag capture". The final objective into the game
+    '''
+    FIXED = True
+    _value = -1 # anyone can catch a hole
+
+    def __init__(self, player):
+        self._player = player
+
 
 class Piece:
+    FIXED = False
+
     MOUSE = 1
     CAT = 2
     WOLF = 3
@@ -86,6 +98,9 @@ class Board:
         player0, player1 = self._players
 
         self._pieces = {
+            (0, 3): Hole(player0),
+            (8, 3): Hole(player1),
+
             (0,0): Piece(player0, Piece.LION),
             (0,6): Piece(player0, Piece.TIGER),
             (1,1): Piece(player0, Piece.WOLF),
@@ -106,12 +121,18 @@ class Board:
         }
 
     def move(self, initial, final):
+        # if the game is over, no movement are allowed
+        if hasattr(self, '_winner'):
+            raise InvalidMovement('We have a winner: %s' % self._winner)
 
         # get initial piece
         if initial not in self._pieces:
             raise InvalidMovement('Piece not found')
 
         piece = self._pieces[initial]
+
+        if piece.FIXED:
+            raise InvalidMovement('Cannot move this piece')
 
         # check player's turn
         player = self._players[self.turn % self.NBR_PLAYERS]
@@ -127,6 +148,7 @@ class Board:
         if not piece.can_swim() and self._board[line][column] == self.LAKE:
             raise InvalidMovement('Can\'t jump into a lake')
 
+        piece_final = None
         if final in self._pieces:
             piece_final = self._pieces[final]
 
@@ -180,8 +202,15 @@ class Board:
         piece = self._pieces.pop(initial)
         self._pieces[final] = piece
 
+        # is a winner?
+        if isinstance(piece_final, Hole):
+            # yes! you win!
+            self.win(piece._player)
+
         return True
 
+    def win(self, player):
+        self._winner = player
 
 class InvalidAction(Exception):
     pass

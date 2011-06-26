@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from game import Piece, Board, InvalidMovement
+from game import Piece, Hole, Board, InvalidMovement
 from unittest import TestCase
 
 class MockPlayer:
@@ -102,7 +102,10 @@ class BoardMoveTest(TestCase):
 
         board1._pieces = {
             (0,0): Piece(player1, 7),
-            (8,8): Piece(player2, 7)
+            (8,8): Piece(player2, 7),
+
+            (0, 3): Hole(player1),
+            (8, 3): Hole(player2),
         }
 
         self.board = board1
@@ -314,6 +317,42 @@ class BoardMoveTest(TestCase):
         self.assertRaises(InvalidMovement, board1.move, (2,1), (3,1))
         self.assertEqual(board1._pieces[(2,1)], Piece(player1, Piece.TIGER))
 
+    def test_move_hole(self):
+        '''
+        A player cannot move the hole
+        '''
+        board1 = self.board
+        player1 = self.player1
+
+        self.assertRaises(InvalidMovement, board1.move, (0,3), (1,3))
+
+    def test_move_to_hole(self):
+        '''
+        A piece can't move to your player's hole
+        '''
+        board1 = self.board
+        player1 = self.player1
+
+        board1._pieces.update({
+            (0,2): Piece(player1, Piece.TIGER),
+        })
+        self.assertRaises(InvalidMovement, board1.move, (0,2), (0,3))
+        self.assertEqual(board1._pieces[(0,2)], Piece(player1, Piece.TIGER))
+
+    def test_hole_capture(self):
+        '''
+        When a piece capture the enemy's hole, the game is over
+        '''
+        board1 = self.board
+        player1 = self.player1
+
+        board1._pieces.update({
+            (8,2): Piece(player1, Piece.TIGER),
+        })
+        board1.move((8,2), (8,3))
+
+        self.assertEqual(board1._winner, player1)
+        self.assertRaises(InvalidMovement, board1.move, (8,3), (8,4))
 
 
 class GameTest(TestCase):

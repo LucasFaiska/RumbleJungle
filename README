@@ -27,7 +27,7 @@ Show the actual board
 
 ## Rules:
 [x] As peças movem-se uma casa por vez, horizontal ou verticalmente, mas nunca na diagonal.
-[ ] Nenhuma peça de um jogador pode entrar na casa da sua própria toca.
+[x] Nenhuma peça de um jogador pode entrar na casa da sua própria toca.
 [x] As peças também não podem entrar nas casas com água (lagos), exceto os ratos.
 [x] Cada casa só pode ser ocupada por uma peça de cada vez.
 [x] Uma peça não pode se mover para uma casa ocupada por outra amiga
