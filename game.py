@@ -158,14 +158,18 @@ class Board:
                 if initial[0] == final[0]:
                     # movement from "1" key (column)
                     for i in xrange(initial[1]+1, final[1]):
-                        if self._board[initial[0]][i] != self.LAKE:
+                        if self._board[initial[0]][i] != self.LAKE or \
+                                (initial[0], i) in self._pieces:
                             # jump is just in a lake
+                            # and nobody are into the lake
                             raise InvalidMovement('Too big movement')
                 else:
                     # movement from "0" key (line)
                     for i in xrange(initial[0]+1, final[0]):
-                        if self._board[i][initial[1]] != self.LAKE:
+                        if self._board[i][initial[1]] != self.LAKE or \
+                                (i, initial[1]) in self._pieces:
                             # jump is just in a lake
+                            # and nobody are into the lake
                             raise InvalidMovement('Too big movement')
             else:
                 # more then 2 squares and can't jump

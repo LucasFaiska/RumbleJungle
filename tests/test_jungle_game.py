@@ -293,6 +293,29 @@ class BoardMoveTest(TestCase):
         self.assertRaises(InvalidMovement, board1.move, (3,0), (3,3))
         self.assertEqual(board1._pieces[(3,0)], Piece(player1, Piece.ELEPHANT))
 
+    def test_cant_jump_if_mouses(self):
+        '''
+        If mouses are into the lake, tigers and lions can't jump
+        '''
+        board1 = self.board
+        player1 = self.player1
+
+        board1._pieces.update({
+            (3,0): Piece(player1, Piece.TIGER),
+            (3,1): Piece(player1, Piece.MOUSE)
+        })
+        self.assertRaises(InvalidMovement, board1.move, (3,0), (3,3))
+        self.assertEqual(board1._pieces[(3,0)], Piece(player1, Piece.TIGER))
+
+        board1._pieces.update({
+            (2,1): Piece(player1, Piece.TIGER),
+            (3,1): Piece(player1, Piece.MOUSE)
+        })
+        self.assertRaises(InvalidMovement, board1.move, (2,1), (3,1))
+        self.assertEqual(board1._pieces[(2,1)], Piece(player1, Piece.TIGER))
+
+
+
 class GameTest(TestCase):
     '''
     Game related tests
