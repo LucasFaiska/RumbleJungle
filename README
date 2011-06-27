@@ -1,16 +1,16 @@
 
 [ALL GAMES PROTOCOL - SERVER]
-# create_game
-Create a new game
+# list_game_types
+List types of game available on the server
+
+# create_game <type>
+Create a new game of <type>
+
+# list_game <type>
+List created games of type <type>
 
 # join_game <n>
 Join to a existing game
-
-# list_game
-List created games
-
-# my_game
-If the player are in a game, show the game. Else, inform not in a game.
 
 # play <n> [ <n> ... ]
 Execute a move (or get an information) in a joined game
@@ -18,13 +18,13 @@ Execute a move (or get an information) in a joined game
 [SPECIFIC GAME PROTOCOL]
 > must be used with "play" server's command
 
-# move xI yI xF yF
-Move piece in coordinates (xI, yI) to (xF, yF)
+# play <lineInitial> <columnInitial> <lineFinal> <columnFinal>
+Move piece in coordinates
 
 # board
-Show the actual board
+Show the actual board (not yet...)
 
-##
+## TODO list ##
 1. Before to enter in a game
 [x] List kinds of games (JungleRumbleGame, for example)
 [x] List games of a kind (instances of JumbleRumbleGame)
