@@ -30,7 +30,10 @@ Show the actual board
 [x] List games of a kind (instances of JumbleRumbleGame)
 [x] Create a game (initiate a JumbleRumbleGame instance)
 [x] Join to a game (a JumbleRumbleGame instance)
-[ ] Play on the board
+[x] Play on the board
+[ ] Left game
+[ ] Check WIN
+[ ] Get the board
 
 2. Before create or join to a game
 [ ] Wait for other player

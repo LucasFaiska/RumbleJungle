@@ -234,6 +234,8 @@ class JungleRumbleGame:
     The "game" interface
     '''
     COMMANDS = ['join', 'left', 'play']
+    INVALID_EXCEPTION = InvalidMovement
+
 
     def __init__(self, player):
         self.board = Board(player)
@@ -247,13 +249,16 @@ class JungleRumbleGame:
         self.board.join(player)
 
     def left(self, player):
-        assert False, 'TODO' #TODO
+        # TODO
+        pass
 
-    def play(self, *args):
+    def play(self, player, *args):
+        # TODO check player x piece
         if len(args) != 4:
-            assert False, args #TODO
-        self.board.move(
-            (args[0], args[1]),
-            (args[2], args[3]),
-        )
+            raise InvalidMovement('Wrong args!')
+
+        return self.board.move(
+                (int(args[0]), int(args[1])),
+                (int(args[2]), int(args[3])),
+            )
 

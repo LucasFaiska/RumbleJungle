@@ -14,6 +14,7 @@ class Connection:
     '''
     COMMANDS = ['quit', # allow exit
         'list_game_types', 'create_game', 'list_game', 'join_game',
+        'play',
     ]
 
     def __init__(self, server, sock):
@@ -124,6 +125,18 @@ class Connection:
 
         return 'joined_to %i' % self.server.join_game(self.uid, gid)
 
+    def play(self, *args):
+        '''
+        Play the game! Is one movement on the board
+        '''
+        player = self.uid
+        all_args = args # args.split(' ')
+        result, message = self.server.play_game(player, *args)
+        if result:
+            return 'played %s' % message
+        else:
+            return 'invalid_movement "%s"' % message
+
 class Server:
     '''
     Our server
@@ -209,24 +222,48 @@ class Server:
         while gid in self.all_games.keys():
             gid = random.randint(1, 100000)
         self.all_games[gid] = game
+        self.all_players[player].gid = gid
+
         self._all_games_lock.release()
 
         # return the generated gid
         return gid
 
+    def _notify(self, players, message):
+        for player_id in players:
+            player_connection = self.all_players[player_id]
+            player_connection.write(message)
+
     def join_game(self, player, gid):
         # join "player" into "gid" game
         game = self.all_games[gid]
         players = game.players()
+
         game.join(player)
+        self.all_players[player].gid = gid
 
         # notify all other players
-        for player_id in players:
-            player_connection = self.all_players[player_id]
-            player_connection.write('new_opponent %s' % player)
-
+        self._notify(players, 'new_opponent %s' % player)
         return gid
 
+    def play_game(self, player, *args):
+        player_connection = self.all_players[player]
+        game_id = player_connection.gid
+
+        game = self.all_games[game_id]
+        try:
+            game.play(player, *args)
+        except game.INVALID_EXCEPTION, exception:
+            return False, unicode(exception)
+
+        message = ' '.join([str(x) for x in args])
+
+        # notify all other players
+        players = game.players()
+        players.pop(players.index(player)) # remove the "moved" piece player
+        self._notify(players, 'played %s' % message)
+
+        return True, message
 
 if __name__ == '__main__':
     server = Server()
