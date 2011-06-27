@@ -36,36 +36,47 @@ class ServerTest(TestCase):
         worker.start()
         self.server = server
         self.worker = worker
+        self.filename_temp = filename_temp
 
         # wait socket up
         while not hasattr(server, '_server_socket'):
             pass
 
-        self.client = MockClient(filename_temp)
-        self.client.read() # hello
+        self.clients = []
+        self._new_client()
+
+    def _new_client(self):
+        client = MockClient(self.filename_temp)
+        client.read() #hello
+        self.clients.append(client)
+        return client
 
     def tearDown(self):
-        self.client.write('quit')
-        # self.client.close() # quit do this!
+        for client in self.clients:
+            client.write('quit')
+            # client.close() # quit do this!
+
         self.server.closeSocket(None, None)
         self.worker._Thread__stop() # force thread's stop
 
     def test_list_types_games(self):
-        self.client.write('list_game_types')
-        result = self.client.read().split('\n')
+        client = self.clients[0]
+        client.write('list_game_types')
+        result = client.read().split('\n')
 
         self.assertEqual(result, ['1', 'JungleRumble'])
 
     def test_create_new_game(self):
-        self.client.write('create_game JungleRumble')
-        result = self.client.read()
+        client = self.clients[0]
+        client.write('create_game JungleRumble')
+        result = client.read()
 
         self.assertTrue(bool(re.match('^new_game \d+$', result)))
 
         game_id = result.split(' ')[-1]
 
-        self.client.write('list_game JungleRumble')
-        result = self.client.read().split('\n')
+        client.write('list_game JungleRumble')
+        result = client.read().split('\n')
 
         self.assertEqual(result, ['1', game_id])
 
