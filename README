@@ -24,6 +24,18 @@ Move piece in coordinates (xI, yI) to (xF, yF)
 # board
 Show the actual board
 
+##
+1. Before to enter in a game
+[x] List kinds of games (JungleRumbleGame, for example)
+[x] List games of a kind (instances of JumbleRumbleGame)
+[x] Create a game (initiate a JumbleRumbleGame instance)
+[ ] Join to a game (a JumbleRumbleGame instance)
+
+2. Before create or join to a game
+[ ] Wait for other player
+[ ] Play a movement
+[ ] Win or lose game
+[ ] Leave a game (give up)
 
 ## Rules:
 [x] As peças movem-se uma casa por vez, horizontal ou verticalmente, mas nunca na diagonal.

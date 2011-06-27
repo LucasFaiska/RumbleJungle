@@ -1,5 +1,6 @@
 import tempfile
 import socket
+import re
 from unittest import TestCase
 from threading import Thread as Worker
 
@@ -49,9 +50,23 @@ class ServerTest(TestCase):
         self.server.closeSocket(None, None)
         self.worker._Thread__stop() # force thread's stop
 
-    def test_list_games(self):
+    def test_list_types_games(self):
         self.client.write('list_game_types')
         result = self.client.read().split('\n')
 
         self.assertEqual(result, ['1', 'JungleRumble'])
+
+    def test_create_new_game(self):
+        self.client.write('create_game JungleRumble')
+        result = self.client.read()
+
+        self.assertTrue(bool(re.match('^new_game \d+$', result)))
+
+        game_id = result.split(' ')[-1]
+
+        self.client.write('list_game JungleRumble')
+        result = self.client.read().split('\n')
+
+        self.assertEqual(result, ['1', game_id])
+
 

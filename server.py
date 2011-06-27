@@ -1,5 +1,6 @@
 
 import socket
+import random
 from threading import Lock, Thread as Worker
 
 from game import JungleRumbleGame
@@ -11,7 +12,7 @@ class Connection:
     '''
     Every client connection
     '''
-    COMMANDS = ['quit', 'list_game_types', ]
+    COMMANDS = ['quit', 'list_game_types', 'create_game', 'list_game', ]
 
     def __init__(self, server, sock):
         self.socket = sock
@@ -30,7 +31,6 @@ class Connection:
     def write(self, data):
         return self.socket.send("%s\n" % data.strip())
 
-
     def run(self):
         '''
         "play" the game
@@ -46,6 +46,7 @@ class Connection:
             except ProtocolError, exception:
                 self.write(unicode(exception))
             except TypeError, exception:
+                print exception
                 self.write(u'Wrong arguments')
 
     def execute(self, data):
@@ -58,9 +59,20 @@ class Connection:
                 method = getattr(self, commands[0])
                 return method(*commands[1:])
             else:
-                raise ProtocolError('command misunderstood:%s' % repr(commands[0]))
+                raise ProtocolError('command misunderstood:%s' % (
+                    repr(commands[0])))
         assert False, data
 
+    def disconnect(self):
+        '''
+        Close socket
+        '''
+        self.socket.close()
+        self.server.all_players.pop(self.uid) #TODO check thread problems
+
+    quit = disconnect
+
+    ## external methods - called by protocol
     def list_game_types(self):
         '''
         Return a list of allowed games in this server
@@ -71,15 +83,31 @@ class Connection:
                 '\n'.join(games),
             )
 
-
-    def disconnect(self):
+    def create_game(self, game_type):
         '''
-        Close socket
+        Received a game type, create it and return the game ID
         '''
-        self.socket.close()
-        self.server.all_players.pop(self.uid) #TODO check thread problems
+        if game_type not in self.server.GAMES.keys():
+            raise ProtocolError('game misunderstood:%s' % (
+                repr(game_type)))
 
-    quit = disconnect
+        gid = self.server.create_game(self.uid, game_type)
+        return 'new_game %s' % gid
+
+    def list_game(self, game_type):
+        '''
+        List all instances os a game type
+        '''
+        if game_type not in self.server.GAMES.keys():
+            raise ProtocolError('game misunderstood:%s' % (
+                repr(game_type)))
+
+        game_class = self.server.GAMES.get(game_type)
+        gids = [str(gid) for gid,game in self.server.all_games.items()
+            if isinstance(game, game_class)]
+
+        return '%i\n%s' % (len(gids), '\n'.join(gids))
+
 
 class Server:
     '''
@@ -154,6 +182,23 @@ class Server:
             process.start()
 
         self.closeSocket(self, None, None)
+
+    def create_game(self, player, game_type):
+        # create a new game
+        game_class = self.GAMES.get(game_type)
+        game = game_class(player)
+
+        # lock, generate unique ID and append to all_games index
+        self._all_games_lock.acquire()
+        gid = random.randint(1, 100000)
+        while gid in self.all_games.keys():
+            gid = random.randint(1, 100000)
+        self.all_games[gid] = game
+        self._all_games_lock.release()
+
+        # return the generated gid
+        return gid
+
 
 if __name__ == '__main__':
     server = Server()
