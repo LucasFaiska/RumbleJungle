@@ -47,7 +47,11 @@ class ServerTest(TestCase):
 
     def _new_client(self):
         client = MockClient(self.filename_temp)
-        client.read() #hello
+        result = client.read() #hello
+
+        uid = int(re.search('Hello (?P<uid>\d+)!', result).groupdict()['uid'])
+        client.uid = uid
+
         self.clients.append(client)
         return client
 
@@ -79,5 +83,20 @@ class ServerTest(TestCase):
         result = client.read().split('\n')
 
         self.assertEqual(result, ['1', game_id])
+
+    def test_join_game(self):
+        client0 = self.clients[0]
+        client0.write('create_game JungleRumble')
+        result = client0.read()
+        game_id = result.split(' ')[-1]
+
+        client1 = self._new_client()
+        client1.write('join_game %s' % game_id)
+
+        result = client1.read()
+        self.assertEqual('joined_to %s' % game_id, result)
+
+        result = client0.read()
+        self.assertEqual('new_opponent %s' % client1.uid, result)
 
 

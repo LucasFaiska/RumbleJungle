@@ -238,6 +238,11 @@ class JungleRumbleGame:
     def __init__(self, player):
         self.board = Board(player)
 
+    def players(self):
+        # copy because is at the moment:
+        # without copy, "join" affect older calls of this method
+        return copy(self.board._players)
+
     def join(self, player):
         self.board.join(player)
 

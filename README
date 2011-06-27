@@ -29,7 +29,8 @@ Show the actual board
 [x] List kinds of games (JungleRumbleGame, for example)
 [x] List games of a kind (instances of JumbleRumbleGame)
 [x] Create a game (initiate a JumbleRumbleGame instance)
-[ ] Join to a game (a JumbleRumbleGame instance)
+[x] Join to a game (a JumbleRumbleGame instance)
+[ ] Play on the board
 
 2. Before create or join to a game
 [ ] Wait for other player

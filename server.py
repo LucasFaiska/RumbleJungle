@@ -12,7 +12,9 @@ class Connection:
     '''
     Every client connection
     '''
-    COMMANDS = ['quit', 'list_game_types', 'create_game', 'list_game', ]
+    COMMANDS = ['quit', # allow exit
+        'list_game_types', 'create_game', 'list_game', 'join_game',
+    ]
 
     def __init__(self, server, sock):
         self.socket = sock
@@ -108,6 +110,19 @@ class Connection:
 
         return '%i\n%s' % (len(gids), '\n'.join(gids))
 
+    def join_game(self, game_id):
+        '''
+        Join to a game
+        '''
+        try:
+            gid = int(game_id)
+        except ValueError:
+            raise ProtocolError('gameid misunderstood:%s' % game_id)
+
+        if gid not in self.server.all_games.keys():
+            raise ProtocolError('gameid not found:%s' % game_id)
+
+        return 'joined_to %i' % self.server.join_game(self.uid, gid)
 
 class Server:
     '''
@@ -197,6 +212,19 @@ class Server:
         self._all_games_lock.release()
 
         # return the generated gid
+        return gid
+
+    def join_game(self, player, gid):
+        # join "player" into "gid" game
+        game = self.all_games[gid]
+        players = game.players()
+        game.join(player)
+
+        # notify all other players
+        for player_id in players:
+            player_connection = self.all_players[player_id]
+            player_connection.write('new_opponent %s' % player)
+
         return gid
 
 
